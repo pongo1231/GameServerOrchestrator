@@ -12,9 +12,36 @@ usage() {
     exit 1
 }
 
+apply_module() {
+    local module="$1"
+
+    case " $APPLIED_MODULES " in
+        *" $module "*) return 0 ;;
+    esac
+
+    APPLIED_MODULES="$APPLIED_MODULES $module"
+
+    local src="$MODULES_DIR/$module"
+    [ -d "$src" ] || {
+        echo "ERROR: module \"$module\" not found!"
+        exit 1
+    }
+
+    if [ -f "$src/modules.txt" ]; then
+        while IFS= read -r sub || [ -n "$sub" ]; do
+            [ -n "$sub" ] || continue
+            apply_module "$sub"
+        done < "$src/modules.txt"
+    fi
+
+    echo " -> $module"
+
+    cp -a "$src/." "$target/" || exit 1
+}
+
 setup_server() {
-    cfg="$1"
-    name=$(basename "$cfg")
+    local cfg="$1"
+    local name=$(basename "$cfg")
     target="$RUN_DIR/$name"
     modules_file="$cfg/modules.txt"
 
@@ -44,17 +71,11 @@ setup_server() {
 
         if [ -f "$modules_file" ]; then
             echo "Applying modules..."
+            APPLIED_MODULES=""
+
             while IFS= read -r module || [ -n "$module" ]; do
                 [ -n "$module" ] || continue
-                src="$MODULES_DIR/$module"
-
-                [ -d "$src" ] || {
-                    echo "ERROR: module \"$module\" not found!"
-                    exit 1
-                }
-
-                echo "  -> $module"
-                cp -a "$src/." "$target/" || exit 1
+                apply_module "$module"
             done < "$modules_file"
         fi
 
@@ -76,8 +97,8 @@ setup_server() {
 }
 
 start_server() {
-    name="$1"
-    cfg="$CONFIGS_DIR/$name"
+    local name="$1"
+    local cfg="$CONFIGS_DIR/$name"
 
     [ -d "$cfg" ] || {
         echo "ERROR: config \""$name"\" does not exist!"
@@ -102,7 +123,7 @@ start_server() {
 }
 
 stop_server() {
-    name="$1"
+    local name="$1"
 
     tmux has-session -t "=${GAME}_$name" 2>/dev/null || {
         echo "Server \"$name\" not running!"
