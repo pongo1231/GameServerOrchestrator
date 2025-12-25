@@ -124,13 +124,14 @@ setup_all() {
 }
 
 start_all() {
-    should_sleep=0
     for s in $(tmux list-sessions -F '#S' 2>/dev/null | grep "^${GAME}_"); do
         should_sleep=1
         tmux send-keys -t "$s" C-c
     done
 
-    [ $should_sleep == 1 ] && sleep 5
+    while tmux list-sessions -F '#S' 2>/dev/null | grep -q "^${GAME}_"; do
+        sleep 1
+    done
 
     for cfg in "$CONFIGS_DIR"/*/; do
         [ -d "$cfg" ] || continue
