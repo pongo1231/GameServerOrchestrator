@@ -2,8 +2,8 @@
 
 usage() {
     echo "Usage:"
-    echo "  $0 $GAME apply <config>"
-    echo "  $0 $GAME apply-all"
+    echo "  $0 $GAME setup <config>"
+    echo "  $0 $GAME setup-all"
     echo "  $0 $GAME start <config>"
     echo "  $0 $GAME start-all"
     echo "  $0 $GAME stop <config>"
@@ -96,7 +96,7 @@ start_server() {
 
     echo "Starting server \"${GAME}_$name\"..."
     pwd="$PWD"
-    (cd $PWD/$RUN_DIR/$name && exec "$pwd/start.sh" $GAME $name)
+    (cd $PWD/$RUN_DIR/$name && exec tmux new-session -d -s "$1_$2" "$pwd/start.sh" $GAME $name)
 
     printf "\n"
 }
@@ -113,7 +113,7 @@ stop_server() {
     tmux send-keys -t "${GAME}_$name" C-c
 }
 
-apply_all() {
+setup_all() {
     for cfg in "$CONFIGS_DIR"/*/; do
         [ -d "$cfg" ] || continue
         setup_server "$cfg" || {
@@ -156,13 +156,13 @@ OVERRIDES_DIR="$GAME/overrides"
 RUN_DIR="$GAME/run"
 
 case "$2" in
-    apply)
+    setup)
         [ -n "$2" ] || usage
         setup_server "$CONFIGS_DIR/$3" || exit 1
         ;;
 
-    apply-all)
-        apply_all
+    setup-all)
+        setup_all
         ;;
 
     start)
