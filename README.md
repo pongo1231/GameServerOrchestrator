@@ -92,6 +92,8 @@ You can run `./orchestrator.sh <game>` to get a list of commands. To update your
 
 Servers are only rebuilt on server start or when explicitly running `./orchestrator.sh <game> apply(-all)`.
 
+Running servers are attachable to through tmux with the name $game_$server, e.g. `tf2_vanilla`.
+
 ## FAQ
 
 ### How do I keep persistent state over server restarts?
