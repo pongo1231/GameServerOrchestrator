@@ -134,7 +134,7 @@ start_all() {
     done
 
     for cfg in "$CONFIGS_DIR"/*/; do
-        [ -d "$cfg" ] || continue
+        [ -d "$cfg" ] && [ ! -e "$cfg/.noautostart" ] || continue
         start_server "$(basename "$cfg")"
     done
 }
