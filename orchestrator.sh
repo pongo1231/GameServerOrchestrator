@@ -106,12 +106,15 @@ start_server() {
     }
 
     tmux has-session -t "=${GAME}_$name" 2>/dev/null && {
-        echo "Server \"$name\" already running"
-        return 0
+        tmux send-keys -t "${GAME}_$name" C-c
     }
 
+    while tmux has-session -t "=${GAME}_$name" 2>/dev/null; do
+        sleep 1
+    done
+
     setup_server "$cfg" || {
-        echo "ERROR: setup failed for \"$name\" — not starting!"
+        echo "ERROR: setup failed for \"$name\" - not starting!"
         return 1
     }
 
@@ -146,7 +149,6 @@ setup_all() {
 
 start_all() {
     for s in $(tmux list-sessions -F '#S' 2>/dev/null | grep "^${GAME}_"); do
-        should_sleep=1
         tmux send-keys -t "$s" C-c
     done
 
