@@ -2,11 +2,11 @@
 
 usage() {
     echo "Usage:"
-    echo "  $0 $GAME setup <config>"
+    echo "  $0 $GAME setup <configs...>"
     echo "  $0 $GAME setup-all"
-    echo "  $0 $GAME start <config>"
+    echo "  $0 $GAME start <configs...>"
     echo "  $0 $GAME start-all"
-    echo "  $0 $GAME stop <config>"
+    echo "  $0 $GAME stop <configs...>"
     echo "  $0 $GAME stop-all"
     echo "  $0 $GAME update"
     exit 1
@@ -181,8 +181,11 @@ RUN_DIR="$GAME/run"
 
 case "$2" in
     setup)
-        [ -n "$2" ] || usage
-        setup_server "$CONFIGS_DIR/$3" || exit 1
+        shift 2
+        [ $# -ge 1 ] || usage
+        for cfg in "$@"; do
+            setup_server "$CONFIGS_DIR/$cfg" || exit 1
+        done
         ;;
 
     setup-all)
@@ -190,8 +193,11 @@ case "$2" in
         ;;
 
     start)
-        [ -n "$3" ] || usage
-        start_server "$3"
+        shift 2
+        [ $# -ge 1 ] || usage
+        for name in "$@"; do
+            start_server "$name"
+        done
         ;;
 
     start-all)
@@ -199,8 +205,11 @@ case "$2" in
         ;;
 
     stop)
-        [ -n "$3" ] || usage
-        stop_server "$3"
+        shift 2
+        [ $# -ge 1 ] || usage
+        for name in "$@"; do
+            stop_server "$name"
+        done
         ;;
 
     stop-all)
