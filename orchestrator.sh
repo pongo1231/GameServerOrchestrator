@@ -106,7 +106,7 @@ start_server() {
     }
 
     tmux has-session -t "=${GAME}_$name" 2>/dev/null && {
-        tmux send-keys -t "${GAME}_$name" C-c
+        stop_server "$name"
     }
 
     while tmux has-session -t "=${GAME}_$name" 2>/dev/null; do
