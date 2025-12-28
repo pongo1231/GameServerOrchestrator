@@ -24,7 +24,7 @@ apply_module() {
     local src="$MODULES_DIR/$module"
     [ -d "$src" ] || {
         echo "ERROR: module \"$module\" not found!"
-        exit 1
+        return 1
     }
 
     if [ -f "$src/modules.txt" ]; then
@@ -36,7 +36,7 @@ apply_module() {
 
     echo " -> $module"
 
-    cp -a "$src/." "$target/" || exit 1
+    cp -a "$src/." "$target/" || return 1
 }
 
 setup_server() {
@@ -45,55 +45,53 @@ setup_server() {
     target="$RUN_DIR/$name"
     modules_file="$cfg/modules.txt"
 
-    (
-        [ -d "$cfg" ] || {
-            echo "ERROR: config \"$name\" does not exist"
-            return 1
-        }
+    [ -d "$cfg" ] || {
+        echo "ERROR: config \"$name\" does not exist"
+        return 1
+    }
 
-        echo "Setting up server \"$name\"..."
+    echo "Setting up server \"$name\"..."
 
-        rm -rf "$target" || exit 1
-        mkdir -p "$target" || exit 1
+    rm -rf "$target" || return 1
+    mkdir -p "$target" || return 1
 
-        echo "Applying common files..."
-        for common in "$COMMON_DIR"/*/; do
-            [ -d "$common" ] || continue
-            cname=$(basename "$common")
-            echo "  -> $cname"
+    echo "Applying common files..."
+    for common in "$COMMON_DIR"/*/; do
+        [ -d "$common" ] || continue
+        cname=$(basename "$common")
+        echo "  -> $cname"
 
-            if [ "$cname" = "00-base" ]; then
-                cp -a "$common/." "$target/" || exit 1
-            else
-                cp -a "$common/." "$target/" || exit 1
-            fi
+        if [ "$cname" = "00-base" ]; then
+            cp -a "$common/." "$target/" || return 1
+        else
+            cp -a "$common/." "$target/" || return 1
+        fi
+    done
+
+    if [ -f "$modules_file" ]; then
+        echo "Applying modules..."
+        APPLIED_MODULES=""
+
+        while IFS= read -r module || [ -n "$module" ]; do
+            [ -n "$module" ] || continue
+            apply_module "$module"
+        done < "$modules_file"
+    fi
+
+    echo "Applying config..."
+    cp -a "$cfg/." "$target/" || return 1
+
+    if [ -d "$OVERRIDES_DIR" ]; then
+        echo "Applying overrides..."
+        for override in "$OVERRIDES_DIR"/*/; do
+            [ -d "$override" ] || continue
+            echo "  -> $(basename "$override")"
+            cp -a "$override/." "$target/" || return 1
         done
+    fi
 
-        if [ -f "$modules_file" ]; then
-            echo "Applying modules..."
-            APPLIED_MODULES=""
-
-            while IFS= read -r module || [ -n "$module" ]; do
-                [ -n "$module" ] || continue
-                apply_module "$module"
-            done < "$modules_file"
-        fi
-
-        echo "Applying config..."
-        cp -a "$cfg/." "$target/" || exit 1
-
-        if [ -d "$OVERRIDES_DIR" ]; then
-            echo "Applying overrides..."
-            for override in "$OVERRIDES_DIR"/*/; do
-                [ -d "$override" ] || continue
-                echo "  -> $(basename "$override")"
-                cp -a "$override/." "$target/" || exit 1
-            done
-        fi
-
-        echo "Server \"$name\" successfully set up!"
-        printf "\n"
-    )
+    echo "Server \"$name\" successfully set up!"
+    printf "\n"
 }
 
 start_server() {
@@ -184,7 +182,7 @@ case "$2" in
         shift 2
         [ $# -ge 1 ] || usage
         for cfg in "$@"; do
-            setup_server "$CONFIGS_DIR/$cfg" || exit 1
+            setup_server "$CONFIGS_DIR/$cfg"
         done
         ;;
 
