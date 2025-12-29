@@ -30,6 +30,9 @@ apply_module() {
     if [ -f "$src/modules.txt" ]; then
         while IFS= read -r sub || [ -n "$sub" ]; do
             [ -n "$sub" ] || continue
+            case "$sub" in
+                /*) continue ;;
+            esac
             apply_module "$sub"
         done < "$src/modules.txt"
     fi
@@ -74,6 +77,9 @@ setup_server() {
 
         while IFS= read -r module || [ -n "$module" ]; do
             [ -n "$module" ] || continue
+            case "$sub" in
+                /*) continue ;;
+            esac
             apply_module "$module"
         done < "$modules_file"
     fi
