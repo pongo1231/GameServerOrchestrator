@@ -152,14 +152,6 @@ setup_all() {
 }
 
 start_all() {
-    for s in $(tmux list-sessions -F '#S' 2>/dev/null | grep "^${GAME}_"); do
-        tmux send-keys -t "$s" C-c
-    done
-
-    while tmux list-sessions -F '#S' 2>/dev/null | grep -q "^${GAME}_"; do
-        sleep 1
-    done
-
     for cfg in "$CONFIGS_DIR"/*/; do
         [ -d "$cfg" ] && [ ! -e "$cfg/.noautostart" ] || continue
         start_server "$(basename "$cfg")"
