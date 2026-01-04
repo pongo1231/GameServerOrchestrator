@@ -77,7 +77,7 @@ setup_server() {
 
         while IFS= read -r module || [ -n "$module" ]; do
             [ -n "$module" ] || continue
-            case "$sub" in
+            case "$module" in
                 /*) continue ;;
             esac
             apply_module "$module"
