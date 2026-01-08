@@ -138,7 +138,7 @@ stop_server() {
     local name="$1"
 
     is_running "$name" || {
-        echo "Server \"$name\" not running!"
+        echo "Server \"$name\" is not running!"
         return 0
     }
 
