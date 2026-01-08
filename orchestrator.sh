@@ -9,7 +9,7 @@ usage() {
     echo "  $0 $GAME stop <configs...>"
     echo "  $0 $GAME stop-all"
     echo "  $0 $GAME update"
-    echo "  $0 $GAME running <config>"
+    echo "  $0 $GAME running (<config>)"
     exit 1
 }
 
@@ -230,7 +230,12 @@ case "$2" in
 
     running)
         shift 2
-        [ $# -ge 1 ] || usage
+        [ $# -ge 1 ] || {
+            for s in $(tmux list-sessions -F '#S' 2>/dev/null | grep "^${GAME}_"); do
+                echo "$s"
+            done
+            exit 0
+        }
         is_running "$1"
         ;;
 
