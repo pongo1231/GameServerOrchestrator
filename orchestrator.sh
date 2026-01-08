@@ -5,7 +5,7 @@ usage() {
     echo "  $0 $GAME setup <configs...>"
     echo "  $0 $GAME setup-all"
     echo "  $0 $GAME start <configs...>"
-    echo "  $0 $GAME start-all"
+    echo "  $0 $GAME start-all (no-restart)"
     echo "  $0 $GAME stop <configs...>"
     echo "  $0 $GAME stop-all"
     echo "  $0 $GAME update"
@@ -152,9 +152,13 @@ setup_all() {
 }
 
 start_all() {
+    local mode="$1"
+
     for cfg in "$CONFIGS_DIR"/*/; do
-        [ -d "$cfg" ] && [ ! -e "$cfg/.noautostart" ] || continue
-        start_server "$(basename "$cfg")"
+        local cfgname="$(basename "$cfg")"
+
+        [[ -d "$cfg" ]] && [[ ! -e "$cfg/.noautostart" ]] && ([[ "$mode" != "no-restart" ]] || is_running "$cfgname") || continue
+        start_server "$cfgname"
     done
 }
 
@@ -203,7 +207,8 @@ case "$2" in
         ;;
 
     start-all)
-        start_all
+        shift 2
+        start_all "$1"
         ;;
 
     stop)
