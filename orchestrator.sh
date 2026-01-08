@@ -231,9 +231,11 @@ case "$2" in
     running)
         shift 2
         [ $# -ge 1 ] || {
+            sessions=""
             for s in $(tmux list-sessions -F '#S' 2>/dev/null | grep "^${GAME}_"); do
-                echo "$s"
+                sessions="$sessions$s "
             done
+            echo "$sessions"
             exit 0
         }
         is_running "$1"
