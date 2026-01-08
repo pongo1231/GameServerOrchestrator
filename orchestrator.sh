@@ -23,14 +23,14 @@ apply_module() {
     APPLIED_MODULES="$APPLIED_MODULES $module"
 
     local src="$MODULES_DIR/$module"
-    [ -d "$src" ] || {
+    [[ -d "$src" ]] || {
         echo "ERROR: module \"$module\" not found!"
         return 1
     }
 
-    if [ -f "$src/modules.txt" ]; then
-        while IFS= read -r sub || [ -n "$sub" ]; do
-            [ -n "$sub" ] || continue
+    if [[ -f "$src/modules.txt" ]]; then
+        while IFS= read -r sub || [[ -n "$sub" ]]; do
+            [[ -n "$sub" ]] || continue
             case "$sub" in
                 /*) continue ;;
             esac
@@ -49,7 +49,7 @@ setup_server() {
     target="$RUN_DIR/$name"
     modules_file="$cfg/modules.txt"
 
-    [ -d "$cfg" ] || {
+    [[ -d "$cfg" ]] || {
         echo "ERROR: config \"$name\" does not exist"
         return 1
     }
@@ -61,23 +61,23 @@ setup_server() {
 
     echo "Applying common files..."
     for common in "$COMMON_DIR"/*/; do
-        [ -d "$common" ] || continue
+        [[ -d "$common" ]] || continue
         cname=$(basename "$common")
         echo "  -> $cname"
 
-        if [ "$cname" = "00-base" ]; then
+        if [[ "$cname" = "00-base" ]]; then
             cp -a "$common/." "$target/" || return 1
         else
             cp -a "$common/." "$target/" || return 1
         fi
     done
 
-    if [ -f "$modules_file" ]; then
+    if [[ -f "$modules_file" ]]; then
         echo "Applying modules..."
         APPLIED_MODULES=""
 
-        while IFS= read -r module || [ -n "$module" ]; do
-            [ -n "$module" ] || continue
+        while IFS= read -r module || [[ -n "$module" ]]; do
+            [[ -n "$module" ]] || continue
             case "$module" in
                 /*) continue ;;
             esac
@@ -88,10 +88,10 @@ setup_server() {
     echo "Applying config..."
     cp -a "$cfg/." "$target/" || return 1
 
-    if [ -d "$OVERRIDES_DIR" ]; then
+    if [[ -d "$OVERRIDES_DIR" ]]; then
         echo "Applying overrides..."
         for override in "$OVERRIDES_DIR"/*/; do
-            [ -d "$override" ] || continue
+            [[ -d "$override" ]] || continue
             echo "  -> $(basename "$override")"
             cp -a "$override/." "$target/" || return 1
         done
@@ -105,7 +105,7 @@ start_server() {
     local name="$1"
     local cfg="$CONFIGS_DIR/$name"
 
-    [ -d "$cfg" ] || {
+    [[ -d "$cfg" ]] || {
         echo "ERROR: config \""$name"\" does not exist!"
         return 1
     }
@@ -143,7 +143,7 @@ stop_server() {
 
 setup_all() {
     for cfg in "$CONFIGS_DIR"/*/; do
-        [ -d "$cfg" ] || continue
+        [[ -d "$cfg" ]] || continue
         setup_server "$cfg" || {
             echo "ERROR: skipping config \"$(basename "$cfg")\"!"
             printf "\n"
@@ -168,12 +168,12 @@ is_running() {
     tmux has-session -t "=${GAME}_$name" 2>/dev/null
 }
 
-if [ -z "$1" ]; then
+if [[ -z "$1" ]]; then
     echo "Usage: $0 <game>"
     exit 1
 fi
 
-if [ ! -d "$1" ]; then
+if [[ ! -d "$1" ]]; then
     echo "ERROR: Game \"$1\" does not exist!"
     exit 1
 fi
@@ -188,7 +188,7 @@ RUN_DIR="$GAME/run"
 case "$2" in
     setup)
         shift 2
-        [ $# -ge 1 ] || usage
+        [[ $# -ge 1 ]] || usage
         for cfg in "$@"; do
             setup_server "$CONFIGS_DIR/$cfg"
         done
@@ -200,7 +200,7 @@ case "$2" in
 
     start)
         shift 2
-        [ $# -ge 1 ] || usage
+        [[ $# -ge 1 ]] || usage
         for name in "$@"; do
             start_server "$name"
         done
@@ -213,7 +213,7 @@ case "$2" in
 
     stop)
         shift 2
-        [ $# -ge 1 ] || usage
+        [[ $# -ge 1 ]] || usage
         for name in "$@"; do
             stop_server "$name"
         done
@@ -235,7 +235,7 @@ case "$2" in
 
     running)
         shift 2
-        [ $# -ge 1 ] || {
+        [[ $# -ge 1 ]] || {
             sessions=""
             for s in $(tmux list-sessions -F '#S' 2>/dev/null | grep "^${GAME}_"); do
                 sessions="$sessions$s "
