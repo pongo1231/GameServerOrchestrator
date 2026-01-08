@@ -9,6 +9,7 @@ usage() {
     echo "  $0 $GAME stop <configs...>"
     echo "  $0 $GAME stop-all"
     echo "  $0 $GAME update"
+    echo "  $0 $GAME running <config>"
     exit 1
 }
 
@@ -158,6 +159,12 @@ start_all() {
     done
 }
 
+is_running() {
+    local name="$1"
+
+    tmux has-session -t "=${GAME}_$name" 2>/dev/null
+}
+
 if [ -z "$1" ]; then
     echo "Usage: $0 <game>"
     exit 1
@@ -220,6 +227,12 @@ case "$2" in
             echo "ERROR: update failed!"
             exit 1
         }
+        ;;
+
+    running)
+        shift 2
+        [ $# -ge 1 ] || usage
+        is_running "$1"
         ;;
 
     *)
