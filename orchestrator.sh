@@ -240,6 +240,7 @@ case "$2" in
             for s in $(tmux list-sessions -F '#S' 2>/dev/null | grep "^${GAME}_"); do
                 sessions="$sessions$s "
             done
+            [[ -z "$sessions" ]] && exit 1
             echo "$sessions"
             exit 0
         }
