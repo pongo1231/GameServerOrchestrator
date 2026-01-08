@@ -110,13 +110,12 @@ start_server() {
         return 1
     }
 
-    tmux has-session -t "=${GAME}_$name" 2>/dev/null && {
+    is_running "$name" && {
         stop_server "$name"
+        while is_running "$name"; do
+            sleep 1
+        done
     }
-
-    while tmux has-session -t "=${GAME}_$name" 2>/dev/null; do
-        sleep 1
-    done
 
     setup_server "$cfg" || {
         echo "ERROR: setup failed for \"$name\" - not starting!"
@@ -133,7 +132,7 @@ start_server() {
 stop_server() {
     local name="$1"
 
-    tmux has-session -t "=${GAME}_$name" 2>/dev/null || {
+    is_running "$name" || {
         echo "Server \"$name\" not running!"
         return 0
     }
