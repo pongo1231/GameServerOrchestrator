@@ -9,6 +9,7 @@ usage() {
     echo "  $0 $GAME stop <configs...>"
     echo "  $0 $GAME stop-all"
     echo "  $0 $GAME update"
+    echo "  $0 $GAME exists <config>"
     echo "  $0 $GAME running (<config>)"
     exit 1
 }
@@ -231,6 +232,12 @@ case "$2" in
             echo "ERROR: update failed!"
             exit 1
         }
+        ;;
+
+    exists)
+        shift 2
+        [[ $# -ge 1 ]] || usage
+        [[ -d "$PWD/$GAME/configs/$1" ]]
         ;;
 
     running)
