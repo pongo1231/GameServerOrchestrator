@@ -24,8 +24,13 @@ apply_module() {
     APPLIED_MODULES="$APPLIED_MODULES $module"
 
     local src="$MODULES_DIR/$module"
+	[[ "$(realpath "$src")" == "$MODULES_ABS_DIR"* ]] || {
+		echo " -> WARNING: module \"$module\" has illegal name, skipping!"
+		return 1
+	}
+    
     [[ -d "$src" ]] || {
-        echo "ERROR: module \"$module\" not found!"
+        echo " -> WARNING: module \"$module\" not found, skipping!"
         return 1
     }
 
@@ -186,6 +191,7 @@ fi
 GAME="$1"
 COMMON_DIR="$GAME/common"
 MODULES_DIR="$GAME/modules"
+MODULES_ABS_DIR="$(realpath "$MODULES_DIR")"
 CONFIGS_DIR="$GAME/configs"
 OVERRIDES_DIR="$GAME/overrides"
 RUN_DIR="$GAME/run"
