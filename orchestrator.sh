@@ -62,8 +62,10 @@ setup_server() {
 
     echo "Setting up server \"$name\"..."
 
+    local running=0
     if is_running "$name"; then
         echo "Server is running, skipping cleanup!"
+        running=1
     else
         rm -rf "$target" || return 1
     fi;
@@ -76,9 +78,9 @@ setup_server() {
         echo "  -> $cname"
 
         if [[ "$cname" = "00-base" ]]; then
-            cp -a "$common/." "$target/" || return 1
+            cp -a "$common/." "$target/" || ((running)) || return 1
         else
-            cp -a "$common/." "$target/" || return 1
+            cp -a "$common/." "$target/" || ((running)) || return 1
         fi
     done
 
@@ -96,14 +98,14 @@ setup_server() {
     fi
 
     echo "Applying config..."
-    cp -a "$cfg/." "$target/" || return 1
+    cp -a "$cfg/." "$target/" || ((running)) || return 1
 
     if [[ -d "$OVERRIDES_DIR" ]]; then
         echo "Applying overrides..."
         for override in "$OVERRIDES_DIR"/*/; do
             [[ -d "$override" ]] || continue
             echo "  -> $(basename "$override")"
-            cp -a "$override/." "$target/" || return 1
+            cp -a "$override/." "$target/" || ((running)) || return 1
         done
     fi
 
