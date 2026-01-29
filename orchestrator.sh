@@ -5,6 +5,7 @@ usage() {
     echo "  $0 $GAME setup <configs...>"
     echo "  $0 $GAME setup-all"
     echo "  $0 $GAME start <configs...>"
+    echo "  $0 $GAME start-fg <config>"
     echo "  $0 $GAME start-all [mode (no-restart)]"
     echo "  $0 $GAME stop <configs...>"
     echo "  $0 $GAME stop-all"
@@ -115,6 +116,8 @@ setup_server() {
 
 start_server() {
     local name="$1"
+    local mode="$2"
+    
     local cfg="$CONFIGS_DIR/$name"
 
     [[ -d "$cfg" ]] || {
@@ -136,7 +139,14 @@ start_server() {
 
     echo "Starting server \"${GAME}_$name\"..."
     pwd="$PWD"
-    (cd $PWD/$RUN_DIR/$name && exec tmux new-session -d -s "$1_$2" "$pwd/start.sh" $GAME $name)
+    (
+      cd $PWD/$RUN_DIR/$name || exit 1
+      if [[ "$mode" == "fg" ]]; then
+          exec "$pwd/start.sh" "$GAME" "$name"
+      else
+          exec tmux new-session -d -s "$1_$2" "$pwd/start.sh" "$GAME" "$name"
+      fi
+    )
 
     printf "\n"
 }
@@ -217,6 +227,12 @@ case "$2" in
         for name in "$@"; do
             start_server "$name"
         done
+        ;;
+
+    start-fg)
+        shift 2
+        [[ $# -ge 1 ]] || usage
+        start_server "$1" "fg"
         ;;
 
     start-all)
