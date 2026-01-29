@@ -135,14 +135,13 @@ start_server() {
 
 	echo "Starting server \"${GAME}_$name\"..."
 	pwd="$PWD"
+	if [[ $mode == "fg" ]]; then
+		cd "$PWD/$RUN_DIR/$name" && exec "$pwd/start.sh" "$GAME" "$name"
+	else
 	(
-		cd "$PWD/$RUN_DIR/$name" || exit 1
-		if [[ "$mode" == "fg" ]]; then
-			exec "$pwd/start.sh" "$GAME" "$name"
-		else
-			exec tmux new-session -d -s "${GAME}_$name" "$pwd/start.sh" "$GAME" "$name"
-		fi
+		cd "$PWD/$RUN_DIR/$name" && exec tmux new-session -d -s "${GAME}_$name" "$pwd/start.sh" "$GAME" "$name"
 	)
+	fi
 
 	printf "\n"
 }
