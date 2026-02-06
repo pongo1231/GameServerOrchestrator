@@ -139,7 +139,7 @@ start_server() {
 		cd "$PWD/$RUN_DIR/$name" && exec "$pwd/start.sh" "$GAME" "$name"
 	else
 	(
-		cd "$PWD/$RUN_DIR/$name" && exec tmux new-session -d -s "${GAME}_$name" "$pwd/start.sh" "$GAME" "$name"
+		cd "$PWD/$RUN_DIR/$name" && exec tmux new -d -s "${GAME}_$name" "$pwd/start.sh" "$GAME" "$name"
 	)
 	fi
 
