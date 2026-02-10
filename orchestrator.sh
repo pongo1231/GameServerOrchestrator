@@ -2,13 +2,9 @@
 
 usage() {
 	echo "Usage:"
-	echo "  $0 $GAME setup <configs...>"
-	echo "  $0 $GAME setup-all"
-	echo "  $0 $GAME start <configs...>"
-	echo "  $0 $GAME start-fg <config>"
-	echo "  $0 $GAME start-all [mode (no-restart)]"
-	echo "  $0 $GAME stop <configs...>"
-	echo "  $0 $GAME stop-all"
+	echo "  $0 $GAME setup [* | <configs...>]"
+	echo "  [RESTART=1] $0 $GAME start [* | <configs...>]"
+	echo "  $0 $GAME stop [* | <configs...>]"
 	echo "  $0 $GAME update"
 	echo "  $0 $GAME exists <config>"
 	echo "  $0 $GAME running (<config>)"
@@ -112,7 +108,11 @@ setup_server() {
 
 start_server() {
 	local name="$1"
-	local mode="$2"
+
+	[[ $RESTART != 1 ]] && is_running "$name" && {
+		echo "Server \"$name\" is already running! Pass RESTART=1 to restart."
+		return 1
+	}
 
 	local cfg="$CONFIGS_DIR/$name"
 
@@ -134,15 +134,7 @@ start_server() {
 	}
 
 	echo "Starting server \"${GAME}_$name\"..."
-	pwd="$PWD"
-	if [[ $mode == "fg" ]]; then
-		cd "$PWD/$RUN_DIR/$name" && exec "$pwd/start.sh" "$GAME" "$name"
-	else
-	(
-		cd "$PWD/$RUN_DIR/$name" && exec tmux new -d -s "${GAME}_$name" "$pwd/start.sh" "$GAME" "$name"
-	)
-	fi
-
+	GAME="$GAME" NAME="$name" ./start.sh
 	printf "\n"
 }
 
@@ -155,7 +147,8 @@ stop_server() {
 	}
 
 	echo "Stopping server \"${GAME}_$name\"..."
-	tmux send-keys -t "${GAME}_$name" C-c
+	GAME="$GAME" NAME="$name" ./stop.sh
+	printf "\n"
 }
 
 setup_all() {
@@ -169,14 +162,12 @@ setup_all() {
 }
 
 start_all() {
-	local mode="$1"
-
 	for cfg in "$CONFIGS_DIR"/*/; do
 		local cfgname="$(basename "$cfg")"
 
 		([[ -d "$cfg" ]] &&
 		 [[ ! -e "$cfg/.noautostart" ]] &&
-		 ([[ "$mode" != "no-restart" ]] || !(is_running "$cfgname"))) || continue
+		 ([[ $RESTART == 1 ]] || !(is_running "$cfgname"))) || continue
 
 		start_server "$cfgname"
 	done
@@ -184,7 +175,8 @@ start_all() {
 
 is_running() {
 	local name="$1"
-	tmux has-session -t "=${GAME}_$name" 2>/dev/null
+	
+	GAME="$GAME" NAME="$name" ./running.sh
 }
 
 if [[ -z "$1" ]]; then
@@ -209,52 +201,43 @@ case "$2" in
 	setup)
 		shift 2
 		[[ $# -ge 1 ]] || usage
-		for cfg in "$@"; do
-			setup_server "$CONFIGS_DIR/$cfg"
-		done
-		;;
-
-	setup-all)
-		setup_all
+		if [[ "$1" == "*" ]]; then
+			setup_all
+		else
+			for cfg in "$@"; do
+				setup_server "$CONFIGS_DIR/$cfg"
+			done
+		fi
 		;;
 
 	start)
 		shift 2
 		[[ $# -ge 1 ]] || usage
-		for name in "$@"; do
-			start_server "$name"
-		done
-		;;
-
-	start-fg)
-		shift 2
-		[[ $# -ge 1 ]] || usage
-		start_server "$1" "fg"
-		;;
-
-	start-all)
-		shift 2
-		[[ $# -ge 1 ]] && [[ $1 != "no-restart" ]] && usage
-		start_all "$1"
+		if [[ "$1" == "*" ]]; then
+			start_all
+		else
+			for name in "$@"; do
+				start_server "$name"
+			done
+		fi
 		;;
 
 	stop)
 		shift 2
 		[[ $# -ge 1 ]] || usage
-		for name in "$@"; do
-			stop_server "$name"
-		done
-		;;
-
-	stop-all)
-		for s in $(tmux list-sessions -F '#S' 2>/dev/null | grep "^${GAME}_"); do
-			tmux send-keys -t "$s" C-c
-		done
+		if [[ "$1" == "*" ]]; then
+			for name in $(GAME="$GAME" ./list-all.sh); do
+				GAME="$GAME" NAME="$name" ./stop.sh
+			done
+		else
+			for name in "$@"; do
+				stop_server "$name"
+			done
+		fi
 		;;
 
 	update)
-		pwd="$PWD"
-		(cd "$PWD/$GAME" && exec "$pwd/update.sh" "$GAME") || {
+		$GAME="$GAME" ./update.sh || {
 			echo "ERROR: update failed!"
 			exit 1
 		}
@@ -270,14 +253,14 @@ case "$2" in
 		shift 2
 		[[ $# -ge 1 ]] || {
 			sessions=""
-			for s in $(tmux list-sessions -F '#S' 2>/dev/null | grep "^${GAME}_"); do
-				sessions="$sessions$s "
+			for name in $(GAME="$GAME" ./list-all.sh); do
+				sessions="$sessions$name "
 			done
 			[[ -z "$sessions" ]] && exit 1
 			echo "$sessions"
 			exit 0
 		}
-		is_running "$1"
+		is_running "$1" && echo "\"$1\" is running" || echo "\"$1\" is not running"
 		;;
 
 	*)
