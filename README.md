@@ -12,7 +12,7 @@ This script was made with reflink-capable filesystems like BTRFS and XFS in mind
 
 ## Prerequisites
 
-- tmux
+- tmux (for default config)
 
 ## Usage
 
@@ -47,34 +47,12 @@ cool_plugins
 intense_plugins
 ```
 
-The script relies on 2 user-specified external scripts, `start.sh` and `update.sh`. The first one is called on server activation, the second one when requesting an update of a game installation. `$PWD` is set to either the server's run directory or game installation directory each.
-
-
-```sh
-tf2/start.sh
-$1: Game name (e.g. tf2)
-$2: Server name (e.g. vanilla)
-$PWD: Server run directory
-
-#!/bin/sh
-
-podman exec -ti -u gaminguser -w "$PWD" ubuntu ./start.sh
-```
+The script relies on 2 user-specified external scripts per game installation, `start.sh` and `update.sh`. The first one is called on server activation, the second one when requesting an update of a game installation.
 
 ```sh
 tf2/configs/vanilla/start.sh
 
 ./srcds_run -game tf +maxplayers 24 +map ctf_2fort +ip 0.0.0.0 -port 27015"
-```
-
-```sh
-tf2/update.sh
-
-$PWD: Game installation directory
-
-#!/bin/sh
-
-./steamcmd/steamcmd.sh +runscript $PWD/tf2_ds.txt
 ```
 
 ```sh
@@ -88,11 +66,11 @@ app_update 232250 validate
 quit
 ```
 
-You can run `./orchestrator.sh <game>` to get a list of commands. To update your base game installation run `./orchestrator.sh <game> update`, and to set up & start up all servers run `./orchestrator.sh <game> start-all`.
+You can run `./orchestrator.sh <game>` to get a list of commands. To update your base game installation run `./orchestrator.sh <game> update`, and to set up & start up all servers run `./orchestrator.sh <game> start "*"`.
 
-Servers are only rebuilt on server start or when explicitly running `./orchestrator.sh <game> apply(-all)`.
+Servers are rebuilt on server start or when explicitly running `./orchestrator.sh <game> apply`.
 
-Running servers are attachable to through tmux with the name $game_$server, e.g. `tf2_vanilla`.
+With the default config, running servers are attachable to through tmux with the name $game_$server, e.g. `tf2_vanilla`. You can adjust all the scripts to your liking though!
 
 ## FAQ
 
