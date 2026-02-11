@@ -237,7 +237,7 @@ case "$2" in
 		;;
 
 	update)
-		$GAME="$GAME" ./update.sh || {
+		GAME="$GAME" ./update.sh || {
 			echo "ERROR: update failed!"
 			exit 1
 		}
