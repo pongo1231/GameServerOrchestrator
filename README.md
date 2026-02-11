@@ -49,10 +49,22 @@ intense_plugins
 
 The script relies on 2 user-specified external scripts per game installation, `start.sh` and `update.sh`. The first one is called on server activation, the second one when requesting an update of a game installation.
 
+Examples for TF2:
+
 ```sh
 tf2/configs/vanilla/start.sh
 
+#!/bin/sh
+
 ./srcds_run -game tf +maxplayers 24 +map ctf_2fort +ip 0.0.0.0 -port 27015"
+```
+
+```sh
+tf2/update.sh
+
+#!/bin/sh
+
+./steamcmd/steamcmd.sh +runscript $PWD/tf2_ds.txt
 ```
 
 ```sh
