@@ -43,7 +43,7 @@ apply_module() {
 
 	echo " -> $module"
 
-	cp -a "$src/." "$target/" || return 1
+	cp -au "$src/." "$target/" || return 1
 }
 
 setup_server() {
@@ -74,7 +74,7 @@ setup_server() {
 		cname=$(basename "$common")
 		echo "  -> $cname"
 
-		cp -a "$common/." "$target/" || ((running)) || return 1
+		cp -au "$common/." "$target/" || ((running)) || return 1
 	done
 
 	if [[ -f "$modules_file" ]]; then
@@ -91,14 +91,14 @@ setup_server() {
 	fi
 
 	echo "Applying config..."
-	cp -a "$cfg/." "$target/" || ((running)) || return 1
+	cp -au "$cfg/." "$target/" || ((running)) || return 1
 
 	if [[ -d "$OVERRIDES_DIR" ]]; then
 		echo "Applying overrides..."
 		for override in "$OVERRIDES_DIR"/*/; do
 			[[ -d "$override" ]] || continue
 			echo "  -> $(basename "$override")"
-			cp -a "$override/." "$target/" || ((running)) || return 1
+			cp -au "$override/." "$target/" || ((running)) || return 1
 		done
 	fi
 
