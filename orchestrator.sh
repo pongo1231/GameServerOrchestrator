@@ -227,7 +227,7 @@ case "$2" in
 		[[ $# -ge 1 ]] || usage
 		if [[ "$1" == "*" ]]; then
 			for name in $(GAME="$GAME" ./list-all.sh); do
-				GAME="$GAME" NAME="$name" ./stop.sh
+				stop_server "$name"
 			done
 		else
 			for name in "$@"; do
@@ -241,12 +241,22 @@ case "$2" in
 		[[ $# -ge 1 ]] || usage
 		if [[ "$1" == "*" ]]; then
 			for name in $(GAME="$GAME" ./list-all.sh); do
-				GAME="$GAME" NAME="$name" ./stop.sh
+				is_running "$name" && {
+					stop_server "$name"
+					while is_running "$name"; do
+						sleep 1
+					done
+				}
 			done
 			start_all
 		else
 			for name in "$@"; do
-				stop_server "$name"
+				is_running "$name" && {
+					stop_server "$name"
+					while is_running "$name"; do
+						sleep 1
+					done
+				}
 				start_server "$name"
 			done
 		fi
