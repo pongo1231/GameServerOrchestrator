@@ -2,9 +2,10 @@
 
 usage() {
 	echo "Usage:"
-	echo "  $0 $GAME setup [* | <configs...>]"
-	echo "  [RESTART=1] $0 $GAME start [* | <configs...>]"
-	echo "  $0 $GAME stop [* | <configs...>]"
+	echo "  $0 $GAME setup [\"*\" | <configs...>]"
+	echo "  $0 $GAME start [\"*\" | <configs...>]"
+	echo "  $0 $GAME stop [\"*\" | <configs...>]"
+	echo "  $0 $GAME restart [\"*\" | <configs...>]"
 	echo "  $0 $GAME update"
 	echo "  $0 $GAME exists <config>"
 	echo "  $0 $GAME running (<config>)"
@@ -109,8 +110,8 @@ setup_server() {
 start_server() {
 	local name="$1"
 
-	[[ $RESTART != 1 ]] && is_running "$name" && {
-		echo "Server \"$name\" is already running! Pass RESTART=1 to restart."
+	is_running "$name" && {
+		echo "Server \"$name\" is already running!"
 		return 1
 	}
 
@@ -166,8 +167,7 @@ start_all() {
 		local cfgname="$(basename "$cfg")"
 
 		([[ -d "$cfg" ]] &&
-		 [[ ! -e "$cfg/.noautostart" ]] &&
-		 ([[ $RESTART == 1 ]] || !(is_running "$cfgname"))) || continue
+		 [[ ! -e "$cfg/.noautostart" ]] && ! is_running "$cfgname") || continue
 
 		start_server "$cfgname"
 	done
@@ -232,6 +232,22 @@ case "$2" in
 		else
 			for name in "$@"; do
 				stop_server "$name"
+			done
+		fi
+		;;
+
+	restart)
+		shift 2
+		[[ $# -ge 1 ]] || usage
+		if [[ "$1" == "*" ]]; then
+			for name in $(GAME="$GAME" ./list-all.sh); do
+				GAME="$GAME" NAME="$name" ./stop.sh
+			done
+			start_all
+		else
+			for name in "$@"; do
+				stop_server "$name"
+				start_server "$name"
 			done
 		fi
 		;;
