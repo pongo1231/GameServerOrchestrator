@@ -60,13 +60,9 @@ setup_server() {
 
 	echo "Setting up server \"$name\"..."
 
-	local running=0
-	if is_running "$name"; then
-		echo "Server is running, skipping cleanup!"
-		running=1
-	else
-		rm -rf "$target" || return 1
-	fi
+	local running=$(is_running "$name")
+
+	rm -rf "$target" || return 1
 	mkdir -p "$target" || return 1
 
 	echo "Applying common files..."
