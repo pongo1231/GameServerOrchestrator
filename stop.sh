@@ -1,3 +1,3 @@
 #/bin/sh
 
-tmux send-keys -t "${GAME}_$NAME" C-c
+tmux list-panes -t "${GAME}_$NAME" -F '#{pane_pid}' | xargs -r kill
