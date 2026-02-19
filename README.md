@@ -32,11 +32,11 @@ tf2/
         vanilla/
         modded/
         ...
-    4. overrides/ (optional)
+    4. overlays/ (optional)
         localtesting/
 ```
 
-Files inside the subdirectories are copied over into the subfolder representing the final server state inside the run directory, in descending order. So all files residing in `common` first, then selected `modules`, then the `config` and at last all `overrides`.
+Files inside the subdirectories are copied over into the subfolder representing the final server state inside the run directory, in descending order. So all files residing in `common` first, then selected `modules`, then the `config` and at last all `overlays`.
 
 Modules are specified inside a `modules.txt` file inside the server config subdirectory, each one seperated by newline.
 

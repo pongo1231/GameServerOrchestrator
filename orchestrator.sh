@@ -90,12 +90,12 @@ setup_server() {
 	echo "Applying config..."
 	cp -a "$cfg/." "$target/" || ((running)) || return 1
 
-	if [[ -d "$OVERRIDES_DIR" ]]; then
-		echo "Applying overrides..."
-		for override in "$OVERRIDES_DIR"/*/; do
-			[[ -d "$override" ]] || continue
-			echo "  -> $(basename "$override")"
-			cp -a "$override/." "$target/" || ((running)) || return 1
+	if [[ -d "$OVERLAYS_DIR" ]]; then
+		echo "Applying overlays..."
+		for overlay in "$OVERLAYS_DIR"/*/; do
+			[[ -d "$overlay" ]] || continue
+			echo "  -> $(basename "$overlay")"
+			cp -a "$overlay/." "$target/" || ((running)) || return 1
 		done
 	fi
 
@@ -190,7 +190,7 @@ COMMON_DIR="$GAME/common"
 MODULES_DIR="$GAME/modules"
 MODULES_ABS_DIR="$(realpath "$MODULES_DIR")"
 CONFIGS_DIR="$GAME/configs"
-OVERRIDES_DIR="$GAME/overrides"
+OVERLAYS_DIR="$GAME/overlays"
 RUN_DIR="$GAME/run"
 
 case "$2" in
